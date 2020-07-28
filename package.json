@@ -1,0 +1,24 @@
+{
+  "name": "employee_tracker",
+  "version": "1.0.0",
+  "description": "An application to track employees",
+  "main": "tacker.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ginganinjar/monash-assignment-12.git"
+  },
+  "author": "David Sparrius",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ginganinjar/monash-assignment-12/issues"
+  },
+  "homepage": "https://github.com/ginganinjar/monash-assignment-12#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "fs": "0.0.1-security",
+    "path": "^0.12.7"
+  }
+}
