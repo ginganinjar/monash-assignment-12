@@ -7,5 +7,5 @@ fs.readFile( "./assets/intro.txt", function (err, data) {
     }
     console.log(data.toString());
   });
-  
 }
+
