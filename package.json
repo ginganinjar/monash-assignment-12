@@ -4,6 +4,7 @@
   "description": "An application to track employees",
   "main": "tacker.js",
   "scripts": {
+    "start": "nodemon tracker.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -19,6 +20,8 @@
   "dependencies": {
     "express": "^4.17.1",
     "fs": "0.0.1-security",
+    "inquirer": "^7.3.3",
+    "mysql": "^2.18.1",
     "nodemon": "^2.0.4",
     "path": "^0.12.7"
   }
