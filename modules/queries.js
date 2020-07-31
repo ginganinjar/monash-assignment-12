@@ -50,7 +50,7 @@ const viewDepartmentBudgets = () => {
 
 const addEmployee = (first, last, roleid, managerid) => {
     return `INSERT INTO employee (first_name, last_name, role_id, manager_id)
-            VALUES ('${first}', '${last}', ${roleid}, ${managerid});`;
+VALUES ('${first}', '${last}', ${roleid}, ${managerid});`;
 };
 
 const addDepartment = (name) => {
