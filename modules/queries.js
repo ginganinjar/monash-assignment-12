@@ -11,21 +11,26 @@ const viewEmployees = () => {
 };
 
 const viewEmployeesByManager = () => {
-    return `SELECT IFNULL(CONCAT(m.first_name, ' ', m.last_name), '-self-') AS 'Manager', CONCAT(e.first_name, ' ', e.last_name) AS 'Employee', d.name, r.title, d.name, r.salary
-            FROM employee e
-                LEFT JOIN employee m ON m.id = e.manager_id
-                JOIN Role r ON e.role_id = r.id
-                JOIN Department d ON d.id = r.department_id
-            ORDER BY m.first_name ASC;`;
-};
+    return ` SELECT e.id, 
+    CONCAT(e.first_name, ' ', e.last_name) AS 'Employee',  
+    IFNULL(CONCAT(m.first_name, ' ', m.last_name), '-') AS 'Manager'
+               FROM employee e
+                   LEFT JOIN employee m ON m.id = e.manager_id
+                   LEFT JOIN Role r ON e.role_id = r.id
+                   LEFT JOIN Department d ON d.id = r.department_id
+               ORDER BY e.id ASC;`;
+}
 
 const viewEmployeesByDepartment = () => {
-    return `SELECT d.name AS 'Department', CONCAT(e.first_name, ' ', e.last_name) AS 'Employee', r.title, d.name, r.salary, CONCAT(m.first_name, ' ', m.last_name) AS 'Manager'
-            FROM employee e
-                LEFT JOIN employee m ON m.id = e.manager_id
-                JOIN Role r ON e.role_id = r.id
-                JOIN Department d ON d.id = r.department_id
-            ORDER BY d.name;`;
+    return `SELECT CONCAT(e.first_name, ' ', e.last_name) AS 'Employee', 
+    r.title, r.salary, 
+    d.name AS 'Department', 
+    CONCAT(m.first_name, ' ', m.last_name) AS 'Manager'
+   FROM employee e
+   JOIN Role r ON r.id = e.role_id
+   JOIN Department d ON d.id = r.department_id
+   LEFT JOIN employee m ON m.id = e.manager_id
+   ORDER BY d.name`;
 };
 
 const viewDepartments = () => {

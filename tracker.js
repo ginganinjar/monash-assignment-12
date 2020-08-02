@@ -9,8 +9,9 @@ const app = express();
 app.use(express.static(path.join(__dirname, ".")));
 
 // variables
-employeeList = [];
-departmentList = [];
+let employeeList = [];
+let departmentList = [];
+let departmentListObj;
 
 function getIDbyRole(namedKey, objArray) {
   for (var i = 0; i < objArray.length; i++) {
@@ -36,7 +37,7 @@ function getDepartmentId(namedKey, objArray) {
     if (objArray[i].name === namedKey) {
       return objArray[i];
     }
-  }
+  }loadObjects();
 }
 
 async function loadObjects() {
@@ -61,6 +62,7 @@ async function loadObjects() {
   });
 
   db.query(sqlQueries.utilGetDepartmentIdsNames(), function (err, results) {
+    departmentList = [];
     if (err) throw err;
     for (let i = 0; i < results.length; i++) {
       departmentList.push(results[i].name);
@@ -82,8 +84,9 @@ function promptUser(input, title, theMessage, choices) {
 
 async function start() {
   theAnswer = "";
-
+  
   while (theAnswer.menuSelection !== "Exit") {
+    loadObjects();
     let theAnswer = await promptUser(
       "list",
       "menuSelection",
@@ -233,7 +236,7 @@ async function start() {
       // updated / change the employee's assigned position
 
       case "Change Employee Role":
-        let theEmployee = await promptUser(
+         theEmployee = await promptUser(
           "list",
           "employeeToUpdate",
           "Select Employee to update :",
@@ -327,7 +330,7 @@ async function start() {
           "list",
           "departmentToDelete",
           "Select department to delete :",
-          departmentList
+          departmentListObj
         );
 
         let removeDepartmentId = getDepartmentId(
