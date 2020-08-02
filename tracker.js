@@ -62,7 +62,6 @@ db.query(sqlQueries.utilGetEmployeeIdsNames(), function (err, results) {
 
 
 db.query(sqlQueries.utilGetDepartmentIdsNames(), function (err, results) {
-  // console.log(results);
 
   if (err) throw err;
   for (let i = 0; i < results.length; i++) {
@@ -335,6 +334,9 @@ async function start() {
           departmentListObj
         ).id;
         sendThisSQL = sqlQueries.deleteDepartment(removeDepartmentId);
+  // clean up the array
+  departmentListObj = departmentListObj.filter(function(el) { return el.id != deleteThisDept; });
+     
 
         break;
       // Delete and remove role from system
@@ -352,9 +354,11 @@ async function start() {
           roleListObj
         ).id;
         sendThisSQL = sqlQueries.deleteRole(roleToDeleteByID);
+     // clean up the array
+     roleListObj = roleListObj.filter(function(el) { return el.id != deleteThisRole; });
+ 
 
         break;
-
       default:
        
     }
@@ -390,9 +394,6 @@ async function start() {
 let myFirstPromise = new Promise((resolve, reject) => {
  
   screenTime.showHeader("./assets/intro.txt");
-
-  //require("./modules/banners")("./assets/intro.txt");
-
   setTimeout(function () {
     resolve("Success!"); // Yay! Everything went well!
   }, 250);
