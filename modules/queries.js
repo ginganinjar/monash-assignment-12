@@ -41,7 +41,14 @@ const viewRoles = () => {
 };
 
 const viewDepartmentBudgets = () => {
-    return `not implemented`;
+    return `SELECT d.id, d.name, sum(a.salary) AS total
+FROM department d
+LEFT JOIN (
+  SELECT r.salary,  r.department_id
+  FROM employee e
+  JOIN role r ON r.id = e.role_id
+) a ON a.department_id = d.id
+GROUP BY d.id, d.name;`
 };
 
 

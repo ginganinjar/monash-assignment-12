@@ -39,36 +39,35 @@ function getDepartmentId(namedKey, objArray) {
   }
 }
 
-db.query(sqlQueries.utilGetRoleIdsTitles(), function (err, results) {
-  roleList = [];
-  if (err) throw err;
-  for (let i = 0; i < results.length; i++) {
-    roleList.push(results[i].title);
-  }
-  roleListObj = results;
-});
-// present greeting to user.
+async function loadObjects() {
+  db.query(sqlQueries.utilGetRoleIdsTitles(), function (err, results) {
+    roleList = [];
+    if (err) throw err;
+    for (let i = 0; i < results.length; i++) {
+      roleList.push(results[i].title);
+    }
+    roleListObj = results;
+  });
+  // present greeting to user.
 
-db.query(sqlQueries.utilGetEmployeeIdsNames(), function (err, results) {
-  theEmployeeList = [];
-  if (err) throw err;
-  theEmployeeList.push("Empty");
-  for (let i = 0; i < results.length; i++) {
-    employeeList.push(results[i].first_name + " " + results[i].last_name);
-  }
-  employeeListObj = results;
-});
+  db.query(sqlQueries.utilGetEmployeeIdsNames(), function (err, results) {
+    theEmployeeList = [];
+    if (err) throw err;
+    theEmployeeList.push("Empty");
+    for (let i = 0; i < results.length; i++) {
+      employeeList.push(results[i].first_name + " " + results[i].last_name);
+    }
+    employeeListObj = results;
+  });
 
-
-
-db.query(sqlQueries.utilGetDepartmentIdsNames(), function (err, results) {
-
-  if (err) throw err;
-  for (let i = 0; i < results.length; i++) {
-    departmentList.push(results[i].name);
-  }
-  departmentListObj = results;
-});
+  db.query(sqlQueries.utilGetDepartmentIdsNames(), function (err, results) {
+    if (err) throw err;
+    for (let i = 0; i < results.length; i++) {
+      departmentList.push(results[i].name);
+    }
+    departmentListObj = results;
+  });
+}
 
 function promptUser(input, title, theMessage, choices) {
   return inquirer.prompt([
@@ -81,12 +80,7 @@ function promptUser(input, title, theMessage, choices) {
   ]);
 }
 
-
-
 async function start() {
-
-  
- 
   theAnswer = "";
 
   while (theAnswer.menuSelection !== "Exit") {
@@ -178,12 +172,13 @@ async function start() {
           ? findEmployeeId(selectedManager.employeeManager, employeeListObj)
           : null;
 
-        sendThisSQL = sqlQueries.addEmployee(
+        sendThisSQL = await sqlQueries.addEmployee(
           firstName.employeeFirstName,
           lastName.employeeLastName,
           roleID,
           newManagerID
         );
+        await loadObjects();
         break;
 
       case "Add Department":
@@ -194,7 +189,10 @@ async function start() {
           []
         );
 
-        sendThisSQL = sqlQueries.addDepartment(newDepartment.departmentName);
+        sendThisSQL = await sqlQueries.addDepartment(
+          newDepartment.departmentName
+        );
+        await loadObjects();
         break;
 
       case "Add Role":
@@ -223,12 +221,13 @@ async function start() {
           department.departmentList,
           departmentListObj
         ).id;
-        sendThisSQL = sqlQueries.addRole(
+        sendThisSQL = await sqlQueries.addRole(
           newTitle.roleTitle,
           pay.pay,
           newRoleId,
           newRoleId
         );
+        await loadObjects();
         break;
 
       // updated / change the employee's assigned position
@@ -263,7 +262,7 @@ async function start() {
       // update / change the employee's manager position
 
       case "Change Employee Manager":
-         theEmployee = await promptUser(
+        theEmployee = await promptUser(
           "list",
           "employeeToUpdate",
           "Select Employee to update :",
@@ -314,12 +313,14 @@ async function start() {
         )
           ? findEmployeeId(deleteThis.selectedID, employeeListObj)
           : null;
-             // assign the correct value to the sql query.
-             sendThisSQL = sqlQueries.deleteEmployee(deleteThisEmployee);
-             // clean up the array
-             employeeListObj = employeeListObj.filter(function(el) { return el.id != deleteThisEmployee; });
-     
-             break;
+        // assign the correct value to the sql query.
+        sendThisSQL = sqlQueries.deleteEmployee(deleteThisEmployee);
+        // clean up the array
+        employeeListObj = employeeListObj.filter(function (el) {
+          return el.id != deleteThisEmployee;
+        });
+
+        break;
       // Delete and remove depaertment
       case "Delete Department":
         let deleteThisDept = await promptUser(
@@ -334,9 +335,10 @@ async function start() {
           departmentListObj
         ).id;
         sendThisSQL = sqlQueries.deleteDepartment(removeDepartmentId);
-  // clean up the array
-  departmentListObj = departmentListObj.filter(function(el) { return el.id != deleteThisDept; });
-     
+        // clean up the array
+        departmentListObj = departmentListObj.filter(function (el) {
+          return el.id != deleteThisDept;
+        });
 
         break;
       // Delete and remove role from system
@@ -354,45 +356,49 @@ async function start() {
           roleListObj
         ).id;
         sendThisSQL = sqlQueries.deleteRole(roleToDeleteByID);
-     // clean up the array
-     roleListObj = roleListObj.filter(function(el) { return el.id != deleteThisRole; });
- 
+        // clean up the array
+        roleListObj = roleListObj.filter(function (el) {
+          return el.id != deleteThisRole;
+        });
 
         break;
       default:
-       
     }
 
     // if the user wants to terminate - do so here
     if (theAnswer.menuSelection == "Exit") {
-     
-   
       screenTime.showHeader("./assets/bye.txt");
-   
+
       setTimeout(function () {
         process.exit(22);
       }, 250);
-    
-    
     }
 
     db.query(sendThisSQL, function (err, result) {
       if (err) throw err;
       console.log("\n");
-      
-      if (result.affectedRows) {
-        console.log("Success...") } else {
-          console.table(result);
-            }
 
-      console.log("\n");
-      console.log(`Press "down arrow" to continue`);
+      if (result.affectedRows) {
+        console.log("Success...");
+      } else {
+        console.table(result);
+      }
+
+      // console.clear();
     });
+
+    toContinue = await promptUser(
+      "prompt",
+      "tocontinue",
+      "\033[31m Press Enter to comtinue",
+      []
+    );
+
+    console.clear();
   }
 }
 
 let myFirstPromise = new Promise((resolve, reject) => {
- 
   screenTime.showHeader("./assets/intro.txt");
   setTimeout(function () {
     resolve("Success!"); // Yay! Everything went well!
@@ -401,5 +407,6 @@ let myFirstPromise = new Promise((resolve, reject) => {
 
 myFirstPromise.then((successMessage) => {
   // successMessage is whatever we passed in the resolve(...) function above.
+  loadObjects();
   start();
 });
