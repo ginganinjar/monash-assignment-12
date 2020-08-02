@@ -3,7 +3,7 @@ const path = require("path");
 const inquirer = require("inquirer");
 const db = require("./modules/sqlCom"); // load db connection
 const sqlQueries = require("./modules/queries"); // template for queries
-const nav = require("./modules/nav");
+const screenTime = require("./modules/banners");
 
 const app = express();
 app.use(express.static(path.join(__dirname, ".")));
@@ -11,6 +11,14 @@ app.use(express.static(path.join(__dirname, ".")));
 // variables
 employeeList = [];
 departmentList = [];
+
+function getIDbyRole(namedKey, objArray) {
+  for (var i = 0; i < objArray.length; i++) {
+    if (objArray[i].title === namedKey) {
+      return objArray[i];
+    }
+  }
+}
 
 function findEmployeeId(namedKey, objArray) {
   for (var i = 0; i < objArray.length; i++) {
@@ -31,6 +39,14 @@ function getDepartmentId(namedKey, objArray) {
   }
 }
 
+db.query(sqlQueries.utilGetRoleIdsTitles(), function (err, results) {
+  roleList = [];
+  if (err) throw err;
+  for (let i = 0; i < results.length; i++) {
+    roleList.push(results[i].title);
+  }
+  roleListObj = results;
+});
 // present greeting to user.
 
 db.query(sqlQueries.utilGetEmployeeIdsNames(), function (err, results) {
@@ -41,32 +57,40 @@ db.query(sqlQueries.utilGetEmployeeIdsNames(), function (err, results) {
     employeeList.push(results[i].first_name + " " + results[i].last_name);
   }
   employeeListObj = results;
-  // console.log(employeeListObj);
 });
 
+
+
 db.query(sqlQueries.utilGetDepartmentIdsNames(), function (err, results) {
+  // console.log(results);
+
   if (err) throw err;
   for (let i = 0; i < results.length; i++) {
     departmentList.push(results[i].name);
   }
   departmentListObj = results;
-})
-
+});
 
 function promptUser(input, title, theMessage, choices) {
-  return inquirer.prompt([{
-    type: input,
-    name: title,
-    message: theMessage,
-    choices: choices,
-  }, ]);
+  return inquirer.prompt([
+    {
+      type: input,
+      name: title,
+      message: theMessage,
+      choices: choices,
+    },
+  ]);
 }
 
+
+
 async function start() {
+
+  
+ 
   theAnswer = "";
 
   while (theAnswer.menuSelection !== "Exit") {
-
     let theAnswer = await promptUser(
       "list",
       "menuSelection",
@@ -83,12 +107,12 @@ async function start() {
         "Add Department",
         "Add Role",
         new inquirer.Separator(),
-        "Update Employee Role",
-        "Update Employee Manager",
+        "Change Employee Role",
+        "Change Employee Manager",
         new inquirer.Separator(),
-        "Remove Employee",
-        "Remove Department",
-        "Remove Role",
+        "Delete Employee",
+        "Delete Department",
+        "Delete Role",
         new inquirer.Separator(),
         "Exit",
         new inquirer.Separator(),
@@ -116,42 +140,31 @@ async function start() {
         break;
 
       case "Add Employee":
-        db.query(sqlQueries.utilGetRoleIdsTitles(), function (err, results) {
-          if (err) throw err;
-          roleList = [];
-
-          for (let i = 0; i < results.length; i++) {
-            roleList.push(results[i].title);
-          }
-          roleFamily = results;
-        });
-
-        theAnswer = await promptUser(
+        let firstName = await promptUser(
           "prompt",
           "employeeFirstName",
           "Enter Employee First Name :",
           []
         );
-        firstName = theAnswer.employeeFirstName;
 
-        theAnswer = await promptUser(
+        let lastName = await promptUser(
           "prompt",
           "employeeLastName",
           "Enter Employees Last Name :",
           []
         );
-        lastName = theAnswer.employeeLastName;
 
-        theAnswer = await promptUser(
+        let selectedRole = await promptUser(
           "list",
           "jobRole",
           "Enter Job Title",
           roleList
         );
 
-        var roleID = roleList.indexOf(theAnswer.jobRole);
+        // get the correct role ID based on description
+        let roleID = getIDbyRole(selectedRole.jobRole, roleListObj).id;
 
-        theAnswer = await promptUser(
+        let selectedManager = await promptUser(
           "list",
           "employeeManager",
           "Enter Employees Manager :",
@@ -159,83 +172,226 @@ async function start() {
         );
 
         // Get the correct ID for the appropriate manager
-        var newManagerID = findEmployeeId(
-            theAnswer.employeeManager,
-            employeeListObj
-          ) ?
-          findEmployeeId(theAnswer.employeeManager, employeeListObj) :
-          null;
+        let newManagerID = findEmployeeId(
+          selectedManager.employeeManager,
+          employeeListObj
+        )
+          ? findEmployeeId(selectedManager.employeeManager, employeeListObj)
+          : null;
+
         sendThisSQL = sqlQueries.addEmployee(
-          firstName,
-          lastName,
+          firstName.employeeFirstName,
+          lastName.employeeLastName,
           roleID,
           newManagerID
         );
         break;
 
       case "Add Department":
-        theAnswer = await promptUser(
+        let newDepartment = await promptUser(
           "prompt",
           "departmentName",
           "Enter the department name :",
           []
         );
 
-        sendThisSQL = sqlQueries.addDepartment(theAnswer.departmentName);
-
+        sendThisSQL = sqlQueries.addDepartment(newDepartment.departmentName);
         break;
 
       case "Add Role":
-        theAnswer = await promptUser(
+        let newTitle = await promptUser(
           "prompt",
           "roleTitle",
           "Enter the Position/Role title :",
           []
         );
-        positionTitle = theAnswer.roleTitle;
 
-        theAnswer = await promptUser(
+        let pay = await promptUser(
           "prompt",
           "pay",
           "Enter the position pay :",
           []
         );
-        positionPay = theAnswer.pay;
 
-        theAnswer = await promptUser(
+        let department = await promptUser(
           "list",
           "departmentList",
           "Enter the department:",
           departmentList
         );
 
-        var newRoleId = getDepartmentId(theAnswer.departmentList, departmentListObj).id;
-        sendThisSQL = sqlQueries.addRole(positionTitle, positionPay, newRoleId, newRoleId);
+        let newRoleId = getDepartmentId(
+          department.departmentList,
+          departmentListObj
+        ).id;
+        sendThisSQL = sqlQueries.addRole(
+          newTitle.roleTitle,
+          pay.pay,
+          newRoleId,
+          newRoleId
+        );
+        break;
+
+      // updated / change the employee's assigned position
+
+      case "Change Employee Role":
+        let theEmployee = await promptUser(
+          "list",
+          "employeeToUpdate",
+          "Select Employee to update :",
+          employeeList
+        );
+
+        let newRole = await promptUser(
+          "list",
+          "newPosition",
+          `Select ${theEmployee.employeeToUpdate}'s new position :`,
+          roleList
+        );
+
+        const updateThis = findEmployeeId(
+          theEmployee.employeeToUpdate,
+          employeeListObj
+        )
+          ? findEmployeeId(theEmployee.employeeToUpdate, employeeListObj)
+          : null;
+        const toThisRole = getIDbyRole(newRole.newPosition, roleListObj).id;
+
+        sendThisSQL = sqlQueries.updateEmployeeRole(updateThis, toThisRole);
+
+        break;
+
+      // update / change the employee's manager position
+
+      case "Change Employee Manager":
+         theEmployee = await promptUser(
+          "list",
+          "employeeToUpdate",
+          "Select Employee to update :",
+          employeeList
+        );
+
+        let theNewManager = await promptUser(
+          "list",
+          "selectedManager",
+          "Select Employees new manager :",
+          employeeList
+        );
+
+        const updateThisEmployee = findEmployeeId(
+          theEmployee.employeeToUpdate,
+          employeeListObj
+        )
+          ? findEmployeeId(theEmployee.employeeToUpdate, employeeListObj)
+          : null;
+        if (theNewManager.selectedManager == updateThisEmployee) {
+          changeToThisManager = null;
+        } else {
+          changeToThisManager = findEmployeeId(
+            theNewManager.selectedManager,
+            employeeListObj
+          );
+        }
+
+        sendThisSQL = sqlQueries.updateEmployeeManager(
+          changeToThisManager,
+          updateThisEmployee
+        );
+
+        break;
+      // Delete and remove employee from system
+
+      case "Delete Employee":
+        let deleteThis = await promptUser(
+          "list",
+          "selectedID",
+          "Select employee to delete :",
+          employeeList
+        );
+
+        let deleteThisEmployee = findEmployeeId(
+          deleteThis.selectedID,
+          employeeListObj
+        )
+          ? findEmployeeId(deleteThis.selectedID, employeeListObj)
+          : null;
+             // assign the correct value to the sql query.
+             sendThisSQL = sqlQueries.deleteEmployee(deleteThisEmployee);
+             // clean up the array
+             employeeListObj = employeeListObj.filter(function(el) { return el.id != deleteThisEmployee; });
+     
+             break;
+      // Delete and remove depaertment
+      case "Delete Department":
+        let deleteThisDept = await promptUser(
+          "list",
+          "departmentToDelete",
+          "Select department to delete :",
+          departmentList
+        );
+
+        let removeDepartmentId = getDepartmentId(
+          deleteThisDept.departmentToDelete,
+          departmentListObj
+        ).id;
+        sendThisSQL = sqlQueries.deleteDepartment(removeDepartmentId);
+
+        break;
+      // Delete and remove role from system
+
+      case "Delete Role":
+        deleteThisRole = await promptUser(
+          "list",
+          "roleToDelete",
+          "Select role/position to delete :",
+          roleList
+        );
+
+        let roleToDeleteByID = getIDbyRole(
+          deleteThisRole.roleToDelete,
+          roleListObj
+        ).id;
+        sendThisSQL = sqlQueries.deleteRole(roleToDeleteByID);
+
         break;
 
       default:
-        // code block
+       
     }
 
     // if the user wants to terminate - do so here
     if (theAnswer.menuSelection == "Exit") {
-      process.exit(22);
+     
+   
+      screenTime.showHeader("./assets/bye.txt");
+   
+      setTimeout(function () {
+        process.exit(22);
+      }, 250);
+    
+    
     }
 
     db.query(sendThisSQL, function (err, result) {
       if (err) throw err;
       console.log("\n");
-      console.table(result);
+      
+      if (result.affectedRows) {
+        console.log("Success...") } else {
+          console.table(result);
+            }
+
       console.log("\n");
+      console.log(`Press "down arrow" to continue`);
     });
-
-
   }
-
 }
 
 let myFirstPromise = new Promise((resolve, reject) => {
-  require("./modules/banners")(app);
+ 
+  screenTime.showHeader("./assets/intro.txt");
+
+  //require("./modules/banners")("./assets/intro.txt");
 
   setTimeout(function () {
     resolve("Success!"); // Yay! Everything went well!
@@ -245,5 +401,4 @@ let myFirstPromise = new Promise((resolve, reject) => {
 myFirstPromise.then((successMessage) => {
   // successMessage is whatever we passed in the resolve(...) function above.
   start();
-
 });

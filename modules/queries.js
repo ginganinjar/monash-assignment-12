@@ -1,4 +1,4 @@
-
+const db = require("./sqlCom"); // load db connection
 // --------------------------------------------------------------------
 // all views
 const viewEmployees = () => {
@@ -119,6 +119,7 @@ const utilGetDepartmentIdsNames = () => {
             ORDER BY d.name ASC;
     `;
 };
+
 //  all view queries
 exports.viewEmployees = viewEmployees;
 exports.viewEmployeesByManager = viewEmployeesByManager;
@@ -146,3 +147,5 @@ exports.deleteRole = deleteRole;
 exports.utilGetEmployeeIdsNames = utilGetEmployeeIdsNames;
 exports.utilGetRoleIdsTitles = utilGetRoleIdsTitles;
 exports.utilGetDepartmentIdsNames = utilGetDepartmentIdsNames;
+
+
