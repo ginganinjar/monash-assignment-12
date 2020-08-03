@@ -110,7 +110,7 @@ async function addEmployee() {
   if (role && role.department_id) {
     const employeesOfDepartment = await sqlQueries.viewEmployeesByDepartment(role.department_id);
 
-      if (employeesOfDepartment.length === 0) {
+    if (employeesOfDepartment.length === 0) {
       console.log('No managers');
     } else {
       // selectManager expects manager and id fields therefore we re-map employee to manager field
@@ -261,7 +261,6 @@ async function start() {
         } else {
           manager = await selectManager(managers);
 
-          // console.log('Empolyees managed by', manager.manager);
           console.table(await sqlQueries.viewEmployeesByManager(manager.id));
         }
         break;
@@ -405,7 +404,7 @@ async function start() {
 
         break;
       default:
-        // do nothing
+      // do nothing
     }
 
     console.log('\n');
