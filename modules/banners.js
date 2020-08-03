@@ -1,15 +1,13 @@
-var fs = require('fs');
+const fs = require('fs');
 
-const showHeader = (app) => {
-  fs.readFile( app, function (err, data) {
-    if (err) {
-      throw err; 
+const showHeader = (header) => new Promise((resolve, reject) => {
+  fs.readFile(header, function (error, data) {
+    if (error) {
+      reject(error);
+    } else {
+      resolve(data.toString());
     }
-    console.log(data.toString() + "\n");
   });
-}
+});
 
 exports.showHeader = showHeader;
-
-
-  
