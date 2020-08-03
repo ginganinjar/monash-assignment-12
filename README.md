@@ -10,9 +10,9 @@
 
   [![GitHub issues](https://img.shields.io/github/followers/ginganinjar?label=Follow)](/issues)
   [![Status](https://img.shields.io/badge/status-active-success.svg)]()  
-  [![GitHub issues](https://img.shields.io/github/issues/ginganinjar/employee_tracker)](/issues)
-  [![GitHub Pull Requests](	https://img.shields.io/github/issues-pr/ginganinjar/employee_tracker)]()
-  [![GitHub Forks](	https://img.shields.io/github/forks/ginganinjar/employee_tracker?label=Fork)]()
+  [![GitHub issues](https://img.shields.io/github/issues/ginganinjar/monash-assignment-12)](/issues)
+  [![GitHub Pull Requests](	https://img.shields.io/github/issues-pr/ginganinjar/monash-assignment-12)]()
+  [![GitHub Forks](	https://img.shields.io/github/forks/ginganinjar/monash-assignment-12?label=Fork)]()
   [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/mit-license.php)
 
 </div>
