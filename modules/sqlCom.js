@@ -5,9 +5,9 @@ const connection = mysql.createConnection({
   // Your port; if not 3306
   port: 3306,
   // Your username
-  user: 'root',
+  user: 'cms',
   // Your password
-  password: 'letmein1',
+  password: 'cms',
   database: 'CMS',
 });
 

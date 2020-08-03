@@ -35,8 +35,6 @@ As per the requirement, the application contains the following features :
 Contained within the ./scheme are two files, seed.sql and schema.sql which will be required to be executed for this application to work correctly.
 
 
-
- 
 </p>
 
 ## :package: Repositry

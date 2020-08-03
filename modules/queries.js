@@ -84,7 +84,7 @@ const viewDepartments = async () => {
 
 const viewRoles = async () => {
   const query = `
-    SELECT r.id, r.title, r.salary, d.name AS department_name
+    SELECT r.id, r.title, r.salary, d.id AS department_id, d.name AS department_name
     FROM role r
     LEFT JOIN department d ON d.id = r.department_id
     ORDER BY d.name, r.title
